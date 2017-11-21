@@ -78,6 +78,15 @@ public enum MysqlType {
       return Field.create(Type.INTEGER, value);
     }
   },
+  INT_UNSIGNED("int_unsigned") {
+    @Override
+    public Field toField(Object value) {
+      if(value != null)
+        return Field.create(Type.LONG, Integer.toUnsignedLong((Integer) value));
+      else
+        return Field.create(Type.LONG, value);
+    }
+  },
   DATE("date") {
     @Override
     public Field toField(Object value) {
@@ -200,9 +209,14 @@ public enum MysqlType {
   public static MysqlType of(String name) {
     // at least now we are not interested in precision - cut it off
     String typeName = name;
+    boolean isUnsigned = typeName.toLowerCase().endsWith("unsigned");
     int i = typeName.indexOf('(');
     if (i > -1) {
       typeName = typeName.substring(0, i);
+    }
+    if (isUnsigned) {
+      if(typeName.toLowerCase().equals("int"))
+        typeName = typeName + "_unsigned";
     }
 
     for (MysqlType t : MysqlType.values()) {
