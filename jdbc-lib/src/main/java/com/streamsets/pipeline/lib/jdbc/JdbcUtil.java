@@ -521,8 +521,13 @@ public class JdbcUtil {
             field = Field.create(Field.Type.FLOAT, rs.getObject(columnIndex));
             break;
           case Types.INTEGER:
-            field = Field.create(Field.Type.INTEGER, rs.getObject(columnIndex));
-            break;
+            if(md.isSigned(columnIndex)) {
+              field = Field.create(Field.Type.INTEGER, rs.getObject(columnIndex));
+              break;
+            } else {
+              field = Field.create(Field.Type.LONG, rs.getObject(columnIndex));
+              break;
+            }
           case Types.ROWID:
             field = Field.create(Field.Type.STRING, rs.getRowId(columnIndex).toString());
             break;
