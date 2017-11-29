@@ -120,7 +120,7 @@ public enum MysqlType {
   ENUM("enum") {
     @Override
     public Field toField(Object value) {
-      return Field.create(Type.INTEGER, value);
+      return Field.create(Type.STRING, value);
     }
   },
   SET("set") {

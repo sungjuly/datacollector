@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import com.google.common.base.Optional;
@@ -39,9 +41,10 @@ import org.slf4j.LoggerFactory;
 
 public class MysqlSchemaRepository {
   private static final String TABLE_SCHEMA_SQL =
-      "SELECT COLUMN_NAME, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS " +
+      "SELECT COLUMN_NAME, COLUMN_TYPE, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS " +
           "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION";
 
+  private static Pattern enumPattern = Pattern.compile("(.*)\\((.*)\\)");
   private static final Logger LOG = LoggerFactory.getLogger(MysqlSchemaRepository.class);
 
   private final DataSource dataSource;
@@ -84,7 +87,18 @@ public class MysqlSchemaRepository {
           while (rs.next()) {
             String name = rs.getString(1);
             String type = rs.getString(2);
-            columns.add(new Column(name, MysqlType.of(type)));
+            int numericPrecision = rs.getInt(3);
+            int numericScale = rs.getInt(4);
+            MysqlType mysqlType = MysqlType.of(type);
+            List<String> enumValues = new ArrayList<>();
+            if(mysqlType == MysqlType.ENUM) {
+              Matcher m = enumPattern.matcher(type);
+              m.find();
+              for(String v : m.group(2).split(",")) {
+                enumValues.add(v.replaceAll("'", ""));
+              }
+            }
+            columns.add(new Column(name, mysqlType, numericPrecision, numericScale, enumValues));
           }
         }
         if (columns.isEmpty()) {

@@ -23,6 +23,13 @@ public class ColumnValue {
 
   public ColumnValue(Column header, Serializable value) {
     this.header = header;
+    if(header.getType() == MysqlType.ENUM && value != null) {
+      try {
+        value = header.getEnumValues().get((Integer)value);
+      } catch (Exception e) {
+        value = Integer.toString((Integer)value);
+      }
+    }
     this.value = value;
   }
 

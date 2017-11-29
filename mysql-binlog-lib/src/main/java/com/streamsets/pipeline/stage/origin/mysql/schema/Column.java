@@ -15,6 +15,8 @@
  */
 package com.streamsets.pipeline.stage.origin.mysql.schema;
 
+import java.util.List;
+
 /**
  * MySql table column description.
  *
@@ -23,10 +25,21 @@ package com.streamsets.pipeline.stage.origin.mysql.schema;
 public class Column {
   private final String name;
   private final MysqlType type;
+  private int numericPrecision;
+  private int numericScale;
+  private List<String> enumValues;
 
   public Column(String name, MysqlType type) {
     this.name = name;
     this.type = type;
+  }
+
+  public Column(String name, MysqlType type, int numericPrecision, int numericScale, List<String> enumValues) {
+    this.name = name;
+    this.type = type;
+    this.numericPrecision = numericPrecision;
+    this.numericScale = numericScale;
+    this.enumValues = enumValues;
   }
 
   public String getName() {
@@ -69,5 +82,9 @@ public class Column {
     int result = name != null ? name.hashCode() : 0;
     result = 31 * result + (type != null ? type.hashCode() : 0);
     return result;
+  }
+
+  public List<String> getEnumValues() {
+    return enumValues;
   }
 }
